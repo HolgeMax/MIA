@@ -76,3 +76,114 @@ This week focused on **Image Registration** — aligning medical images acquired
 
 **Summary:**  
 Linear registration aligns medical images by mapping voxel to world coordinates, resampling via B-splines, and optimizing transformations — rigid for shape-preserving cases, affine for more flexible alignment.
+
+
+## Week 4: Intensity-Based Image Registration
+
+This week focused on **Intensity-Based Registration**, an automatic approach for aligning medical images — especially useful across different imaging modalities.
+
+---
+
+### 1. Core Principles and Motivation
+- **Automatic Registration:** Aligns images by minimizing an **energy function** derived directly from image intensities.  
+- **Advantage:** No manual landmark selection — faster and more accurate.  
+- **Goal:** Find transformation parameters **w** that minimize the energy E(w).
+
+---
+
+### 2. Choice of Similarity Measure
+Depends on the intensity relationship between images:
+
+| Registration Type | Use Case | Similarity Measure |
+|--------------------|----------|--------------------|
+| **Intra-modal** (same modality) | e.g., two CT scans | **Sum of Squared Differences (SSD)** |
+| **Inter-modal** (different modalities) | e.g., T1 ↔ T2 MRI, or MRI ↔ CT | **Mutual Information (MI)** |
+
+---
+
+### 3. Mutual Information (MI)
+- **Definition:** Measures statistical dependency between intensities in fixed (F) and moving (M) images.  
+- **Optimization:**  
+  Maximize MI = H_F + H_M − H_FM  
+  or equivalently minimize  
+  E(w) = H_FM − H_F − H_M  
+- **Joint Histogram:** Built from intensity pairs (f, m) at corresponding locations.  
+- **Joint Entropy (H_FM):** Indicates alignment quality — lower entropy → better alignment.
+
+---
+
+### 4. Implementation and Preprocessing
+- **Resampling:** Moving image (e.g., T2) is resampled to the fixed image grid (e.g., T1) using affine scanner matrices.  
+- **Interpolation:** **Cubic B-spline (order 3)** interpolation estimates intensities at transformed non-integer coordinates.  
+- **Optimization:** No closed-form solution — parameters are refined iteratively (e.g., via grid search or gradient-based methods).
+
+---
+
+**Summary:**  
+Intensity-based registration, particularly **Mutual Information (MI)**, enables robust, automatic alignment of multimodal images, outperforming rigid or affine landmark-based approaches.
+
+## Week 5: Non-linear Image Registration
+
+This week focused on **Non-linear Deformations**, extending registration beyond rigid and affine transformations to model **tissue deformation** in medical images.
+
+---
+
+### 1. Purpose of Non-linear Transformations
+Linear models cannot capture local deformations caused by breathing, organ motion, or tumor growth.  
+**Non-linear registration** models these complex, flexible deformations.
+
+---
+
+### 2. Model Structure (Residual Deformation)
+After global alignment (affine registration), only the **residual deformation** is modeled:
+
+y_d(x, w_d) = x_d + δ_d(x, w_d)
+
+where **δ_d** describes local displacements between corresponding anatomical points.
+
+---
+
+### 3. Deformation Basis Functions
+The deformation field δ_d(x, w_d) is expressed as a linear combination of **M basis functions** ϕ_m(x) with weights w_d,m:
+
+δ_d(x, w_d) = Σₘ w_d,m · ϕ_m(x)
+
+- **Basis choice:** typically **separable B-spline functions** (as in Week 2).  
+- **3D case:** deformation parameters are separate for each axis →  
+  w = (w₁, w₂, w₃)ᵀ.
+
+---
+
+### 4. Optimization Challenge
+No closed-form solution exists for minimizing the energy function (e.g., SSD).  
+Instead, **iterative numerical optimization** is required to estimate the parameters w.
+
+---
+
+### 5. Gauss–Newton Optimization
+- **Idea:** Linearize the moving image M(y(x, w)) around current estimates of w.  
+- **Solution:** Solve for update ε in closed form:  
+  ε = (ΨᵀΨ)⁻¹Ψᵀτ  
+- **Iterative update:**  
+  w ← w + ε  
+
+This method efficiently approximates parameter updates for non-linear problems.
+
+---
+
+### 6. Stabilization with Levenberg–Marquardt
+If the update ε is too large, the energy may increase.  
+To stabilize, modify the update:
+
+ε = (ΨᵀΨ + λI)⁻¹Ψᵀτ
+
+- **λ (lambda):** adjustable damping factor.  
+  - If energy increases → increase λ (acts like gradient descent).  
+  - If energy decreases → reduce λ for faster convergence.  
+This ensures stable, monotonic energy reduction during optimization.
+
+---
+
+**Summary:**  
+Non-linear registration enables realistic modeling of tissue deformation by combining **B-spline basis functions** with **iterative optimization (Gauss–Newton + Levenberg–Marquardt)**, providing flexible yet stable image alignment.
+
