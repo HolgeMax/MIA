@@ -273,7 +273,7 @@ GMM is a simple generative model that assumes **statistical independence between
 - **Inference (Mean-Field Approximation — MFA):**
   Using an MRF makes the posterior unfactorizable. MFA approximates the true posterior \(p(l \mid d, \hat{\theta})\) by minimizing the **Kullback–Leibler (KL) divergence** with a simplified, factorized distribution \(q(l)\), thereby incorporating spatial context.
 
-## 📚 Refresher in Probability
+## Refresher in Probability
 
 This section reviews the fundamental rules governing probability.
 
