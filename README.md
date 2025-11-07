@@ -241,3 +241,62 @@ Smoothing: Techniques like Taubin smoothing use iterated Gaussian smoothing step
 Surface Normals: Calculated by the Cross-product of adjacent edge vectors, determining the surface's direction.
 
 Summary: Surface-based metrics provide a robust framework for analyzing cortical features by employing anatomical constraints during reconstruction and registration, enabling the accurate measurement of metrics like cortical thickness and geodesic distance on a common spherical template.
+
+# Week 8: Generative Models for Segmentation I
+
+Week 8 covers **Generative Models for Segmentation**, treating image segmentation as an inverse problem where the goal is to infer the underlying anatomical structure (labels, \(l\)) from the image data (\(d\)).
+
+## 1. Segmentation as an Inverse Problem
+
+Segmentation uses **Bayes' Rule** to find the posterior distribution:
+
+\[
+p(l \mid d, \hat{\theta}) \propto p(d \mid l, \theta_d)\, p(l \mid \theta_l)
+\]
+
+- **Imaging Model (Likelihood \(p(d \mid l,\theta_d)\))**: Predicts image intensities given a known anatomical label.
+- **Labeling Model (Prior \(p(l \mid \theta_l)\))**: Predicts the typical spatial occurrence of anatomical structures.
+
+## 2. Gaussian Mixture Model (GMM)
+
+GMM is a simple generative model that assumes **statistical independence between voxels**.
+
+- **Prior:** Each label \(k\) occurs with a relative frequency \(\pi_k\) (the mixing coefficient).
+- **Likelihood:** Intensity for label \(k\) follows a Gaussian distribution \(\mathcal{N}(\mu_k, \sigma_k^2)\).
+- **Segmentation:** Due to voxel independence, **Maximum a Posteriori (MAP)** segmentation is performed voxel-by-voxel, driven only by local intensity.
+
+## 3. GMM Limitations and MRF Enhancement
+
+- **GMM Limitation:** Purely intensity-driven segmentation leads to errors due to intensity overlap and ignores spatial context.
+- **Markov Random Field (MRF):** Used as a more advanced prior \(p(l \mid \theta_l)\) to enforce spatial smoothness.
+  - The MRF prior explicitly penalizes neighboring voxels for having different labels, favoring clustered segments.
+- **Inference (Mean-Field Approximation — MFA):**
+  Using an MRF makes the posterior unfactorizable. MFA approximates the true posterior \(p(l \mid d, \hat{\theta})\) by minimizing the **Kullback–Leibler (KL) divergence** with a simplified, factorized distribution \(q(l)\), thereby incorporating spatial context.
+
+## 📚 Refresher in Probability
+
+This section reviews the fundamental rules governing probability.
+
+### Key Concepts
+
+| Concept                | Notation      | Meaning                                                                 |
+|------------------------|---------------|-------------------------------------------------------------------------|
+| **Joint Probability**  | \(p(x, y)\)   | Likelihood that two variables \(X\) and \(Y\) take specific values simultaneously. |
+| **Marginal Probability** | \(p(x)\)    | Probability of \(X=x\), regardless of the value of \(Y\).              |
+| **Conditional Probability** | \(p(y \mid x)\) | Probability that \(Y=y\) given \(X=x\).                           |
+
+### The Two Rules
+
+1. **Sum Rule (Marginalization):** Used to find marginal probability by summing the joint probability over all possible values of \(Y\).
+   \[
+   p(x) = \sum_y p(x, y)
+   \]
+
+2. **Product Rule (Joint Probability):** Expresses the joint probability as the product of the conditional and marginal probabilities.
+   \[
+   p(x, y) = p(y \mid x)\, p(x)
+   \]
+
+- **Bayes' Rule** is directly derived from the Product Rule, used to find the inverse conditional probability.
+
+ **Continuous Variables:** For continuous variables, summation in the Sum Rule is replaced by integration, and the function \(p(x)\) is termed the **Probability Density Function (PDF)**, as seen in the Gaussian distribution.
