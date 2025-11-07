@@ -1,0 +1,12 @@
+# Ignore common image files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.webp
+# Add other specific image formats if needed (e.g., raw camera files)
+*.cr2
+*.nef
+*.arw
